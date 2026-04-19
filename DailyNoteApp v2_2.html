@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autistic Daily Journal</title>
+    <style>
+        /* --- Themes --- */
+        :root {
+            /* Default Light Theme */
+            --primary: #4a90e2;
+            --bg: #f9f9f9;
+            --container-bg: #ffffff;
+            --text: #333333;
+            --text-muted: #666666;
+            --border: #cccccc;
+            --hover-bg: #f0f0f0;
+            --data-bg: #e1f0ff;
+            --sidebar-hover: #f0f8ff;
+            --status-bg: #f4f4f4;
+            --input-bg: #ffffff;
+            --modal-overlay: rgba(0,0,0,0.5);
+            --star-active: #f1c40f;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme */
+            --primary: #bb86fc;
+            --bg: #121212;
+            --container-bg: #1e1e1e;
+            --text: #e0e0e0;
+            --text-muted: #aaaaaa;
+            --border: #333333;
+            --hover-bg: #2c2c2c;
+            --data-bg: #3700b3;
+            --sidebar-hover: #2c2c2c;
+            --status-bg: #2d2d2d;
+            --input-bg: #2c2c2c;
+            --modal-overlay: rgba(0,0,0,0.7);
+            --star-active: #f39c12;
+        }
+
+        [data-theme="dinosaur"] {
+            /* Dinosaur Theme (Greens & Reds) */
+            --primary: #d32f2f; 
+            --bg: #e8f5e9; 
+            --container-bg: #c8e6c9; 
+            --text: #1b5e20; 
+            --text-muted: #388e3c;
+            --border: #81c784; 
+            --hover-bg: #a5d6a7;
+            --data-bg: #ffcdd2; 
+            --sidebar-hover: #a5d6a7;
+            --status-bg: #a5d6a7;
+            --input-bg: #e8f5e9;
+            --modal-overlay: rgba(27, 94, 32, 0.6);
+            --star-active: #f1c40f;
+        }
+
+        /* --- Global Styles --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: var(--text);
+            background-color: var(--bg);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* Top Banner */
+        .top-banner {
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: var(--container-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+        
+        .banner-text {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 70%;
+        }
+        .banner-text h2 { margin: 0; font-size: 1.3em; text-align: left; }
+        .greeting-text { font-size: 1.15em; font-weight: bold; color: var(--primary); }
+        .summary-text { font-size: 0.9em; color: var(--text-muted); line-height: 1.4; }
+        
+        .banner-controls { display: flex; gap: 15px; align-items: center; }
+        .theme-selector select {
+            padding: 8px;
+            border-radius: 4px;
+            background: var(--input-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        /* Layout */
+        .layout-wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .container, .sidebar {
+            background: var(--container-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+
+        .sidebar {
+            align-self: start; 
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        h1, h2 { text-align: center; margin-top: 0; }
+        h3 { border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 25px; }
+        
+        /* Sidebar Collapsible Summaries */
+        .summary-details {
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        .summary-details summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary);
+            outline: none;
+            user-select: none;
+            font-size: 0.9em;
+        }
+        .summary-counts {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+        .summary-count-item {
+            display: flex;
+            justify-content: space-between;
+            background: var(--status-bg);
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        /* Sidebar Item Styles */
+        .sidebar-item {
+            border-bottom: 1px solid var(--border);
+            padding: 12px 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 4px;
+        }
+        .sidebar-item:hover { background: var(--sidebar-hover); }
+        .sidebar-item:last-child { border-bottom: none; }
+        .sidebar-date {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 0.9em;
+            margin-bottom: 4px;
+        }
+        .sidebar-preview {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .sidebar-tags {
+            font-size: 0.75em;
+            color: #fff;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .status-tag {
+            background: #888;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        .empty-sidebar { color: var(--text-muted); font-size: 0.9em; text-align: center; margin-top: 20px; }
+
+        /* General Inputs & Buttons */
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        button:hover { opacity: 0.8; }
+        .btn-danger { background-color: #e74c3c; }
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px dashed var(--primary);
+        }
+        .btn-secondary:hover {
+            background-color: var(--data-bg);
+            opacity: 1;
+        }
+
+        input[type="text"], input[type="date"], textarea {
+            background: var(--input-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 8px;
+            outline: none;
+            font-family: inherit;
+        }
+        input[type="text"]:focus, input[type="date"]:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        /* Calendar Styles */
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .day-label {
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            padding-bottom: 5px;
+        }
+        .day-cell {
+            aspect-ratio: 1;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: var(--container-bg);
+            color: var(--text);
+            transition: background 0.2s;
+        }
+        .day-cell:hover { background: var(--hover-bg); }
+        .day-cell.has-data {
+            background-color: var(--data-bg);
+            border-color: var(--primary);
+            font-weight: bold;
+        }
+        .day-cell.empty { border: none; background: transparent; cursor: default; }
+        
+        /* Daily Entry Styles */
+        .hidden { display: none !important; }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        
+        /* Rating Styles */
+        .star-rating {
+            display: inline-flex;
+            gap: 8px;
+            font-size: 2.5em;
+            cursor: pointer;
+            color: var(--border);
+            user-select: none;
+        }
+        .star-rating span { transition: transform 0.1s; }
+        .star-rating span:hover { transform: scale(1.1); }
+        .star-rating.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Status Tracker Grid */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            background: var(--status-bg);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .status-grid label {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        .status-grid input[type="checkbox"] { margin-right: 8px; transform: scale(1.1); cursor: pointer; }
+
+        /* Checklist Styles */
+        .checklist-container { margin-bottom: 20px; }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .checklist-item input[type="checkbox"] { margin-right: 10px; transform: scale(1.2); cursor: pointer; }
+        .checklist-item input[type="text"] { flex-grow: 1; }
+        .checklist-item button {
+            background: #ff4c4c;
+            padding: 4px 8px;
+            margin-left: 10px;
+        }
+
+        /* Modal Styles (Settings) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-overlay);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--container-bg);
+            padding: 25px;
+            border-radius: 8px;
+            width: 100%; max-width: 400px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .settings-list {
+            list-style: none; padding: 0; margin: 0 0 20px 0;
+            max-height: 200px; overflow-y: auto;
+        }
+        .settings-list li {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px; border-bottom: 1px solid var(--border);
+        }
+        .settings-add-row { display: flex; gap: 10px; }
+        .settings-add-row input { flex-grow: 1; }
+        .settings-toggle-row {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .layout-wrapper { grid-template-columns: 1fr 300px; }
+            .left-sidebar { grid-column: span 2; order: 3; } 
+        }
+        @media (max-width: 768px) {
+            .layout-wrapper { grid-template-columns: 1fr; }
+            .left-sidebar { grid-column: 1; order: 3; }
+            .top-banner { flex-direction: column; gap: 15px; align-items: stretch;}
+            .banner-text { max-width: 100%; text-align: center; }
+            .banner-text h2 { text-align: center; }
+            .banner-controls { flex-direction: row; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-banner">
+    <div class="banner-text">
+        <h2 id="currentDayHeader">Loading date...</h2>
+        <div id="greetingDisplay" class="greeting-text"></div>
+        <div id="sevenDaySummaryDisplay" class="summary-text"></div>
+        <div id="upcomingSevenDaySummaryDisplay" class="summary-text" style="margin-top: 4px;"></div>
+    </div>
+    <div class="banner-controls">
+        <button onclick="openSettingsModal()">⚙️ Settings</button>
+        <div class="theme-selector">
+            <label for="themeSelect">Theme: </label>
+            <select id="themeSelect" onchange="changeTheme(this.value)">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="dinosaur">Dinosaur</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="layout-wrapper">
+    <aside class="sidebar left-sidebar">
+        <h2>Past 7 Days</h2>
+        
+        <details class="summary-details">
+            <summary>Status Summary (Counts)</summary>
+            <div id="pastWeekSummaryCount" class="summary-counts"></div>
+        </details>
+
+        <div id="pastWeekList"></div>
+    </aside>
+
+    <div class="container">
+        <div id="calendarView">
+            <div class="header-controls">
+                <button onclick="changeMonth(-1)">&larr; Prev</button>
+                <h2 id="monthYearDisplay" style="margin: 0;"></h2>
+                <button onclick="changeMonth(1)">Next &rarr;</button>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+
+        <div id="entryView" class="hidden">
+            <div class="header-controls">
+                <button onclick="showCalendar()">&larr; Calendar</button>
+                <h2 id="selectedDateDisplay" style="margin: 0;"></h2>
+                <button onclick="saveCurrentDay()">Save Day</button>
+            </div>
+            
+            <div id="ratingContainer">
+                <h3 style="margin-top: 10px;">Rate your Day</h3>
+                <div id="starRating" class="star-rating">
+                    <span data-val="1">&#9733;</span>
+                    <span data-val="2">&#9733;</span>
+                    <span data-val="3">&#9733;</span>
+                    <span data-val="4">&#9733;</span>
+                    <span data-val="5">&#9733;</span>
+                </div>
+                <div id="futureRatingMsg" style="display:none; font-size: 0.85em; color: var(--text-muted); margin-top: 5px;">
+                    Rating is not available for future dates.
+                </div>
+            </div>
+
+            <h3>Daily Status</h3>
+            <div class="status-grid" id="statusGrid">
+                </div>
+
+            <h3>Notes</h3>
+            <textarea id="dailyNotes" placeholder="Write your notes here..."></textarea>
+            
+            <h3>Custom Tasks</h3>
+            <div class="checklist-container" id="checklist"></div>
+            <button onclick="addChecklistItem('', false)">+ Add Task</button>
+        </div>
+    </div>
+
+    <aside class="sidebar">
+        
+        <div id="countdownSection">
+            <h2>Event Countdown</h2>
+            <div id="countdownList"></div>
+            
+            <button id="toggleAddCountdownBtn" class="btn-secondary" style="width: 100%; margin-top: 15px;" onclick="toggleAddCountdownForm()">+ Add New Event</button>
+            
+            <div id="addCountdownForm" class="hidden" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px; padding: 15px; border: 1px solid var(--border); border-radius: 4px; background-color: var(--status-bg);">
+                <input type="text" id="newCountdownName" placeholder="Event Name (e.g., Doctor, Trip)">
+                <input type="date" id="newCountdownDate">
+                <button onclick="addCountdownEvent()">Save Event</button>
+            </div>
+            
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border);">
+        </div>
+
+        <h2>Upcoming Notes</h2>
+        
+        <details class="summary-details">
+            <summary>Status Summary (Counts)</summary>
+            <div id="upcomingSummaryCount" class="summary-counts"></div>
+        </details>
+
+        <div id="upcomingList"></div>
+    </aside>
+</div>
+
+<div id="settingsModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <h2 style="margin-top:0;">Settings</h2>
+        <p style="font-size:0.85em; color:var(--text-muted);">Manage your custom daily status trackers.</p>
+        
+        <ul id="settingsStatusList" class="settings-list"></ul>
+        
+        <div class="settings-add-row">
+            <input type="text" id="newStatusInput" placeholder="New status name...">
+            <button onclick="addNewStatusKey()">Add</button>
+        </div>
+
+        <div class="settings-toggle-row">
+            <label style="display: flex; align-items: center; cursor: pointer; font-size: 0.9em; font-weight: bold;">
+                <input type="checkbox" id="toggleCountdownSetting" onchange="toggleCountdownVisibility(this.checked)" style="transform: scale(1.2); margin-right: 10px;">
+                Show "Event Countdown" Section
+            </label>
+            <p style="font-size:0.8em; color:var(--text-muted); margin-top: 5px; margin-left: 25px;">Turn this off to hide the countdown widget from the right sidebar.</p>
+        </div>
+
+        <div class="settings-toggle-row" style="margin-top: 10px; padding-top: 10px;">
+            <label style="display: flex; align-items: center; cursor: pointer; font-size: 0.9em; font-weight: bold;">
+                <input type="checkbox" id="toggleRatingSetting" onchange="toggleRatingVisibility(this.checked)" style="transform: scale(1.2); margin-right: 10px;">
+                Show "Rate your Day" Section
+            </label>
+            <p style="font-size:0.8em; color:var(--text-muted); margin-top: 5px; margin-left: 25px;">Turn this off to hide the 5-star rating widget on daily entries.</p>
+        </div>
+
+        <div style="margin-top: 25px; text-align: right;">
+            <button onclick="closeSettingsModal()">Close & Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Data & Initialization ---
+    let currentDate = new Date();
+    let selectedDateString = ''; 
+    let currentRating = 0; 
+    let isAddCountdownVisible = false;
+
+    // Settings Defaults
+    const defaultStatusKeys = ['Good Sleep', 'Bad Sleep', 'Sensory Overwhelmed', 'Social Event', 'Meltdown', 'Sad', 'Happy', 'Excited'];
+    let currentStatusKeys = JSON.parse(localStorage.getItem('dailyNotesStatusKeys')) || defaultStatusKeys;
+    
+    // Feature Toggles Defaults
+    let countdownEvents = JSON.parse(localStorage.getItem('dailyNotesCountdowns')) || [];
+    let showCountdown = JSON.parse(localStorage.getItem('dailyNotesShowCountdown'));
+    if (showCountdown === null) showCountdown = true;
+
+    let showRating = JSON.parse(localStorage.getItem('dailyNotesShowRating'));
+    if (showRating === null) showRating = true;
+
+    function initTheme() {
+        const savedTheme = localStorage.getItem('dailyNotesTheme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeSelect').value = savedTheme;
+    }
+
+    function changeTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('dailyNotesTheme', theme);
+    }
+
+    function initCurrentDayAndGreeting() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDayHeader').textContent = new Date().toLocaleDateString(undefined, options);
+
+        const hour = new Date().getHours();
+        let greeting = "";
+        if (hour >= 0 && hour < 10) greeting = "Good Morning!";
+        else if (hour >= 10 && hour < 15) greeting = "Good Afternoon!";
+        else if (hour >= 15 && hour < 18) greeting = "Good Day!";
+        else greeting = "Good Evening!";
+        
+        document.getElementById('greetingDisplay').textContent = greeting;
+    }
+
+    function getAllData() {
+        return JSON.parse(localStorage.getItem('dailyNotesData')) || {};
+    }
+
+    function saveData(data) {
+        localStorage.setItem('dailyNotesData', JSON.stringify(data));
+    }
+
+    // --- Settings Menu Logic ---
+    function openSettingsModal() {
+        document.getElementById('settingsModal').classList.remove('hidden');
+        renderSettingsList();
+        document.getElementById('toggleCountdownSetting').checked = showCountdown;
+        document.getElementById('toggleRatingSetting').checked = showRating;
+    }
+
+    function closeSettingsModal() {
+        document.getElementById('settingsModal').classList.add('hidden');
+        localStorage.setItem('dailyNotesStatusKeys', JSON.stringify(currentStatusKeys));
+        if (!document.getElementById('entryView').classList.contains('hidden')) {
+            rebuildEntryCheckboxes();
+        }
+    }
+
+    function renderSettingsList() {
+        const list = document.getElementById('settingsStatusList');
+        list.innerHTML = '';
+        currentStatusKeys.forEach((key, index) => {
+            const li = document.createElement('li');
+            li.textContent = key;
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'X';
+            delBtn.className = 'btn-danger';
+            delBtn.style.padding = '4px 8px';
+            delBtn.onclick = () => {
+                currentStatusKeys.splice(index, 1);
+                renderSettingsList();
+            };
+            li.appendChild(delBtn);
+            list.appendChild(li);
+        });
+    }
+
+    function addNewStatusKey() {
+        const input = document.getElementById('newStatusInput');
+        const val = input.value.trim();
+        if (val && !currentStatusKeys.includes(val)) {
+            currentStatusKeys.push(val);
+            input.value = '';
+            renderSettingsList();
+        }
+    }
+
+    // --- Feature Toggles ---
+    function toggleCountdownVisibility(isVisible) {
+        showCountdown = isVisible;
+        localStorage.setItem('dailyNotesShowCountdown', JSON.stringify(showCountdown));
+        document.getElementById('countdownSection').style.display = isVisible ? 'block' : 'none';
+    }
+
+    function toggleRatingVisibility(isVisible) {
+        showRating = isVisible;
+        localStorage.setItem('dailyNotesShowRating', JSON.stringify(showRating));
+        document.getElementById('ratingContainer').style.display = isVisible ? 'block' : 'none';
+        renderPastWeekSummary(); // Re-render to show/hide the average rating text in the banner
+    }
+
+    // --- Event Countdown Logic ---
+    function toggleAddCountdownForm() {
+        isAddCountdownVisible = !isAddCountdownVisible;
+        const form = document.getElementById('addCountdownForm');
+        const toggleBtn = document.getElementById('toggleAddCountdownBtn');
+        
+        if (isAddCountdownVisible) {
+            form.classList.remove('hidden');
+            toggleBtn.textContent = 'Cancel';
+            toggleBtn.style.borderStyle = 'solid';
+        } else {
+            form.classList.add('hidden');
+            toggleBtn.textContent = '+ Add New Event';
+            toggleBtn.style.borderStyle = 'dashed';
+            // Reset fields
+            document.getElementById('newCountdownName').value = '';
+            document.getElementById('newCountdownDate').value = '';
+        }
+    }
+
+    function saveCountdowns() {
+        localStorage.setItem('dailyNotesCountdowns', JSON.stringify(countdownEvents));
+    }
+
+    function addCountdownEvent() {
+        const nameInput = document.getElementById('newCountdownName');
+        const dateInput = document.getElementById('newCountdownDate');
+        
+        const name = nameInput.value.trim();
+        const date = dateInput.value;
+
+        if (name && date) {
+            countdownEvents.push({ name, date });
+            saveCountdowns();
+            // Automatically close the form after saving
+            toggleAddCountdownForm();
+            renderCountdownEvents();
+        }
+    }
+
+    function renderCountdownEvents() {
+        const list = document.getElementById('countdownList');
+        list.innerHTML = '';
+        
+        if (countdownEvents.length === 0) {
+            list.innerHTML = '<div class="empty-sidebar" style="margin-top:10px;">No upcoming events tracked.</div>';
+            return;
+        }
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        countdownEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        countdownEvents.forEach((evt, index) => {
+            const eventDate = new Date(evt.date + 'T00:00:00'); 
+            const diffTime = eventDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'sidebar-item';
+            itemDiv.style.display = 'flex';
+            itemDiv.style.justifyContent = 'space-between';
+            itemDiv.style.alignItems = 'center';
+
+            let daysText = diffDays === 0 ? "Today!" : (diffDays === 1 ? "Tomorrow" : `In ${diffDays} days`);
+            if (diffDays < 0) daysText = `${Math.abs(diffDays)} days ago`;
+
+            const textDiv = document.createElement('div');
+            textDiv.innerHTML = `<div class="sidebar-date">${evt.name}</div><div class="sidebar-preview" style="color:var(--primary); font-weight:bold;">${daysText}</div>`;
+            
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'X';
+            delBtn.className = 'btn-danger';
+            delBtn.style.padding = '4px 8px';
+            delBtn.onclick = () => {
+                countdownEvents.splice(index, 1);
+                saveCountdowns();
+                renderCountdownEvents();
+            };
+
+            itemDiv.appendChild(textDiv);
+            itemDiv.appendChild(delBtn);
+            list.appendChild(itemDiv);
+        });
+    }
+
+    // --- Rate your Day Logic ---
+    function initStars() {
+        const stars = document.querySelectorAll('#starRating span');
+        stars.forEach(star => {
+            star.onmouseover = () => updateStarsUI(star.dataset.val);
+            star.onmouseout = () => updateStarsUI(currentRating);
+            star.onclick = () => { 
+                currentRating = parseInt(star.dataset.val); 
+                updateStarsUI(currentRating); 
+            };
+        });
+    }
+
+    function updateStarsUI(val) {
+        const stars = document.querySelectorAll('#starRating span');
+        stars.forEach(star => {
+            if (parseInt(star.dataset.val) <= val) {
+                star.style.color = 'var(--star-active)';
+            } else {
+                star.style.color = 'var(--border)';
+            }
+        });
+    }
+
+    // --- UI Helper: Render Status Counts & Top Banner Sentences ---
+    function formatDisplayKey(key) {
+        return key.replace(/([A-Z])/g, ' $1').replace(/\s+/g, ' ').trim();
+    }
+
+    function renderStatusCounts(counts, elementId) {
+        const container = document.getElementById(elementId);
+        container.innerHTML = '';
+        
+        const sortedKeys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+        
+        if (sortedKeys.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted); font-style:italic;">No statuses recorded for this period.</div>';
+            return;
+        }
+
+        sortedKeys.forEach(key => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'summary-count-item';
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = formatDisplayKey(key);
+            
+            const countSpan = document.createElement('strong');
+            countSpan.textContent = counts[key];
+            
+            itemDiv.appendChild(nameSpan);
+            itemDiv.appendChild(countSpan);
+            container.appendChild(itemDiv);
+        });
+    }
+
+    function updatePastWeekTopBannerSummary(counts, avgRating) {
+        const summaryTextEl = document.getElementById('sevenDaySummaryDisplay');
+        const sortedKeys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+        
+        let statusText = "";
+
+        if (sortedKeys.length === 0) {
+            statusText = "You haven't tracked any daily statuses in the last seven days.";
+        } else {
+            const formattedParts = sortedKeys.map(key => `${counts[key]} ${formatDisplayKey(key)}`);
+            let joinedText = "";
+            
+            if (formattedParts.length === 1) {
+                joinedText = formattedParts[0];
+            } else if (formattedParts.length === 2) {
+                joinedText = formattedParts.join(" and ");
+            } else {
+                const lastPart = formattedParts.pop();
+                joinedText = formattedParts.join(", ") + ", and " + lastPart;
+            }
+            statusText = `You've had ${joinedText} in the last seven days.`;
+        }
+
+        // Add the average rating text if the feature is on and there is a valid rating
+        if (showRating && avgRating > 0) {
+            statusText += ` Your average rating was ${avgRating} stars.`;
+        }
+
+        summaryTextEl.textContent = statusText;
+    }
+
+    function renderUpcomingWeekBannerSummary() {
+        const allData = getAllData();
+        const today = new Date();
+        let daysWithNotesCount = 0;
+        let statusCounts = {};
+
+        for (let i = 1; i <= 7; i++) {
+            const d = new Date(today);
+            d.setDate(d.getDate() + i);
+            const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+            const dayData = allData[dateStr];
+            if (dayData && (dayData.notes.trim() !== '' || dayData.checklist.length > 0 || hasTrueStatus(dayData.status))) {
+                daysWithNotesCount++;
+                if (dayData.status) {
+                    Object.keys(dayData.status).forEach(key => {
+                        if (dayData.status[key]) statusCounts[key] = (statusCounts[key] || 0) + 1;
+                    });
+                }
+            }
+        }
+
+        const summaryTextEl = document.getElementById('upcomingSevenDaySummaryDisplay');
+        const sortedKeys = Object.keys(statusCounts).sort((a, b) => statusCounts[b] - statusCounts[a]);
+
+        let baseText = `You have ${daysWithNotesCount} day${daysWithNotesCount !== 1 ? 's' : ''} with notes coming up`;
+
+        if (daysWithNotesCount === 0) {
+            summaryTextEl.textContent = "You have 0 days with notes coming up in the next seven days.";
+            return;
+        }
+
+        if (sortedKeys.length === 0) {
+            summaryTextEl.textContent = baseText + " in the next seven days.";
+            return;
+        }
+
+        const formattedParts = sortedKeys.map(key => `${statusCounts[key]} ${formatDisplayKey(key)}`);
+        let joinedText = "";
+
+        if (formattedParts.length === 1) {
+            joinedText = formattedParts[0];
+        } else if (formattedParts.length === 2) {
+            joinedText = formattedParts.join(" and ");
+        } else {
+            const lastPart = formattedParts.pop();
+            joinedText = formattedParts.join(", ") + ", and " + lastPart;
+        }
+
+        summaryTextEl.textContent = `${baseText}, including ${joinedText} in the next seven days.`;
+    }
+
+    // --- Sidebar Logics (Upcoming & Past) ---
+    function renderUpcomingEvents() {
+        const list = document.getElementById('upcomingList');
+        list.innerHTML = '';
+        
+        const allData = getAllData();
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        
+        let statusCounts = {};
+
+        const upcomingDates = Object.keys(allData).filter(dateStr => {
+            if (dateStr < todayStr) return false; 
+            const dayData = allData[dateStr];
+            return (dayData.notes.trim() !== '' || dayData.checklist.length > 0 || hasTrueStatus(dayData.status));
+        }).sort(); 
+        
+        if (upcomingDates.length === 0) {
+            list.innerHTML = '<div class="empty-sidebar">No upcoming notes or tasks.</div>';
+            renderStatusCounts({}, 'upcomingSummaryCount');
+            return;
+        }
+        
+        upcomingDates.forEach(dateStr => {
+            const dayData = allData[dateStr];
+            if (dayData.status) {
+                Object.keys(dayData.status).forEach(key => {
+                    if (dayData.status[key]) statusCounts[key] = (statusCounts[key] || 0) + 1;
+                });
+            }
+            createSidebarItem(list, dateStr, dayData);
+        });
+
+        renderStatusCounts(statusCounts, 'upcomingSummaryCount');
+    }
+
+    function renderPastWeekSummary() {
+        const list = document.getElementById('pastWeekList');
+        list.innerHTML = '';
+        
+        const allData = getAllData();
+        const today = new Date();
+        let foundData = false;
+        
+        let statusCounts = {};
+        let totalRating = 0;
+        let ratingCount = 0;
+
+        for (let i = 1; i <= 7; i++) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            
+            const dayData = allData[dateStr];
+            if (dayData && (dayData.notes.trim() !== '' || dayData.checklist.length > 0 || hasTrueStatus(dayData.status) || (dayData.rating && dayData.rating > 0))) {
+                
+                if (dayData.status) {
+                    Object.keys(dayData.status).forEach(key => {
+                        if (dayData.status[key]) statusCounts[key] = (statusCounts[key] || 0) + 1;
+                    });
+                }
+
+                if (dayData.rating && dayData.rating > 0) {
+                    totalRating += dayData.rating;
+                    ratingCount++;
+                }
+
+                createSidebarItem(list, dateStr, dayData);
+                foundData = true;
+            }
+        }
+
+        if (!foundData) {
+            list.innerHTML = '<div class="empty-sidebar">No entries in the past 7 days.</div>';
+        }
+
+        let avgRating = ratingCount > 0 ? parseFloat((totalRating / ratingCount).toFixed(1)) : 0;
+
+        renderStatusCounts(statusCounts, 'pastWeekSummaryCount');
+        updatePastWeekTopBannerSummary(statusCounts, avgRating);
+    }
+
+    function createSidebarItem(container, dateStr, dayData) {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'sidebar-item';
+        
+        itemDiv.onclick = () => {
+            currentDate = new Date(dateStr + 'T00:00:00'); 
+            renderCalendar();
+            openDay(dateStr);
+        };
+        
+        const [y, m, d] = dateStr.split('-');
+        const dateEl = document.createElement('div');
+        dateEl.className = 'sidebar-date';
+        dateEl.textContent = `${m}/${d}/${y}`;
+        
+        const previewEl = document.createElement('div');
+        previewEl.className = 'sidebar-preview';
+        previewEl.textContent = dayData.notes.trim() ? dayData.notes.split('\n')[0] : 'No text notes.';
+        
+        const tagsEl = document.createElement('div');
+        tagsEl.className = 'sidebar-tags';
+        
+        if (dayData.status) {
+            Object.keys(dayData.status).forEach(key => {
+                if (dayData.status[key]) {
+                    const tag = document.createElement('span');
+                    tag.className = 'status-tag';
+                    tag.textContent = formatDisplayKey(key);
+                    
+                    const lowerKey = key.toLowerCase();
+                    if(lowerKey.includes('meltdown') || lowerKey.includes('sad') || lowerKey.includes('badsleep')) {
+                        tag.style.background = '#e74c3c';
+                    } else if(lowerKey.includes('happy') || lowerKey.includes('excited') || lowerKey.includes('goodsleep')) {
+                        tag.style.background = '#2ecc71';
+                    } else if(lowerKey.includes('sensory')) {
+                        tag.style.background = '#f39c12';
+                    } else if(lowerKey.includes('social')) {
+                        tag.style.background = '#9b59b6';
+                    } else {
+                        tag.style.background = '#607d8b'; 
+                    }
+
+                    tagsEl.appendChild(tag);
+                }
+            });
+        }
+
+        if (showRating && dayData.rating && dayData.rating > 0) {
+            const ratingTag = document.createElement('span');
+            ratingTag.className = 'status-tag';
+            ratingTag.style.background = 'transparent';
+            ratingTag.style.color = 'var(--star-active)';
+            ratingTag.style.fontWeight = 'bold';
+            ratingTag.style.fontSize = '1.1em';
+            ratingTag.style.padding = '0';
+            ratingTag.innerHTML = '&#9733;'.repeat(dayData.rating);
+            tagsEl.appendChild(ratingTag);
+        }
+
+        itemDiv.appendChild(dateEl);
+        itemDiv.appendChild(previewEl);
+        itemDiv.appendChild(tagsEl);
+        container.appendChild(itemDiv);
+    }
+
+    function hasTrueStatus(statusObj) {
+        if (!statusObj) return false;
+        return Object.values(statusObj).some(val => val === true);
+    }
+
+    // --- Calendar Logic ---
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        const monthYearDisplay = document.getElementById('monthYearDisplay');
+        grid.innerHTML = ''; 
+
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
+
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        days.forEach(day => {
+            const el = document.createElement('div');
+            el.className = 'day-label';
+            el.textContent = day;
+            grid.appendChild(el);
+        });
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const allData = getAllData();
+
+        for (let i = 0; i < firstDay; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'day-cell empty';
+            grid.appendChild(emptyCell);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const cell = document.createElement('div');
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            
+            cell.className = 'day-cell';
+            cell.textContent = i;
+            
+            const dayData = allData[dateStr];
+            if (dayData && (dayData.notes.trim() !== '' || dayData.checklist.length > 0 || hasTrueStatus(dayData.status) || (dayData.rating && dayData.rating > 0))) {
+                cell.classList.add('has-data');
+            }
+
+            cell.onclick = () => openDay(dateStr);
+            grid.appendChild(cell);
+        }
+    }
+
+    function changeMonth(delta) {
+        currentDate.setMonth(currentDate.getMonth() + delta);
+        renderCalendar();
+    }
+
+    // --- Daily Entry Logic ---
+    function rebuildEntryCheckboxes(savedStatusObj = {}) {
+        const grid = document.getElementById('statusGrid');
+        grid.innerHTML = '';
+        currentStatusKeys.forEach(key => {
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.dataset.key = key; 
+            
+            const camelCaseKey = key.replace(/\s+/g, ''); 
+            if (savedStatusObj[key] === true || savedStatusObj[camelCaseKey] === true) {
+                checkbox.checked = true;
+            }
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(' ' + key));
+            grid.appendChild(label);
+        });
+    }
+
+    function openDay(dateStr) {
+        selectedDateString = dateStr;
+        document.getElementById('calendarView').classList.add('hidden');
+        document.getElementById('entryView').classList.remove('hidden');
+        
+        const [year, month, day] = dateStr.split('-');
+        document.getElementById('selectedDateDisplay').textContent = `${month}/${day}/${year}`;
+
+        const allData = getAllData();
+        const dayData = allData[dateStr] || { notes: '', checklist: [], status: {}, rating: 0 };
+
+        document.getElementById('dailyNotes').value = dayData.notes;
+
+        rebuildEntryCheckboxes(dayData.status || {});
+
+        const checklistDiv = document.getElementById('checklist');
+        checklistDiv.innerHTML = '';
+        if (dayData.checklist.length === 0) {
+            addChecklistItem('', false); 
+        } else {
+            dayData.checklist.forEach(item => addChecklistItem(item.text, item.checked));
+        }
+
+        // Handle Rating logic for Past vs Future
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        
+        const isFuture = dateStr > todayStr;
+        const starDiv = document.getElementById('starRating');
+        const msgDiv = document.getElementById('futureRatingMsg');
+
+        if (isFuture) {
+            starDiv.classList.add('disabled');
+            msgDiv.style.display = 'block';
+            currentRating = 0; 
+        } else {
+            starDiv.classList.remove('disabled');
+            msgDiv.style.display = 'none';
+            currentRating = dayData.rating || 0;
+        }
+        updateStarsUI(currentRating);
+    }
+
+    function addChecklistItem(text, isChecked) {
+        const container = document.getElementById('checklist');
+        const div = document.createElement('div');
+        div.className = 'checklist-item';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = isChecked;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = text;
+        input.placeholder = "New task...";
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'X';
+        deleteBtn.className = 'btn-danger';
+        deleteBtn.style.padding = '4px 8px';
+        deleteBtn.onclick = () => div.remove();
+
+        div.appendChild(checkbox);
+        div.appendChild(input);
+        div.appendChild(deleteBtn);
+        container.appendChild(div);
+    }
+
+    function saveCurrentDay() {
+        const notes = document.getElementById('dailyNotes').value;
+        
+        const checklistItems = document.querySelectorAll('.checklist-item');
+        const checklistData = [];
+        checklistItems.forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            const textInput = item.querySelector('input[type="text"]');
+            if (textInput.value.trim() !== '') {
+                checklistData.push({ text: textInput.value.trim(), checked: checkbox.checked });
+            }
+        });
+
+        const statusData = {};
+        const statusInputs = document.querySelectorAll('#statusGrid input[type="checkbox"]');
+        statusInputs.forEach(input => {
+            statusData[input.dataset.key] = input.checked;
+        });
+
+        const allData = getAllData();
+        
+        const existingStatusData = (allData[selectedDateString] && allData[selectedDateString].status) ? allData[selectedDateString].status : {};
+        const mergedStatusData = { ...existingStatusData, ...statusData };
+
+        allData[selectedDateString] = {
+            notes: notes,
+            checklist: checklistData,
+            status: mergedStatusData,
+            rating: currentRating 
+        };
+        
+        saveData(allData);
+        showCalendar();
+    }
+
+    function showCalendar() {
+        document.getElementById('entryView').classList.add('hidden');
+        document.getElementById('calendarView').classList.remove('hidden');
+        renderCalendar(); 
+        renderUpcomingEvents(); 
+        renderPastWeekSummary();
+        renderUpcomingWeekBannerSummary();
+    }
+
+    // --- App Init ---
+    initTheme();
+    initCurrentDayAndGreeting();
+    initStars();
+    toggleCountdownVisibility(showCountdown); 
+    toggleRatingVisibility(showRating);
+    renderCountdownEvents();
+    renderCalendar();
+    renderUpcomingEvents();
+    renderPastWeekSummary();
+    renderUpcomingWeekBannerSummary();
+</script>
+
+</body>
+</html>
